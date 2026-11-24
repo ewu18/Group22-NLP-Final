@@ -108,16 +108,27 @@ flowchart TD
 ## Repository contents
 
 ```
-paper/   the final paper (PDF)
+paper/                                 the final paper (PDF)
+notebooks/01_data_and_baselines.ipynb  data cleaning, label mapping, section segmentation, splits; regex and TF-IDF baselines
+notebooks/02_bert_models.ipynb         three-section model, baseline BERT, Section-Aware BERT; comparisons and attention analysis
+notebooks/03_llm_baselines.ipynb       few-shot prompting and GPT-4o-mini fine-tuning
+notebooks/04_error_analysis.ipynb      error analysis and example postings
 ```
+
+The paper reports the final results; read it first. The notebooks are the team's working Colab notebook, split by stage
+and kept with their saved outputs. In `02_bert_models.ipynb` the final model appears as **Title-Aware BERT**: it adds
+the title as a fourth section to a first three-section model, and it is the **Section-Aware BERT** of the paper.
+
+Some intermediate runs in the notebooks use different settings or give slightly different numbers from the paper (for
+example, 78.51% for baseline BERT against 78.35% in the paper, and a 400-posting LLM sample against 1,000); the paper's
+numbers are the final ones. Comments and printed messages in the code have been translated into English, but the saved
+outputs are left as they were produced, so some of them are in Chinese. The OpenAI fine-tuning cells are incomplete in
+the original and do not run as is; the API key is a placeholder. Paths point to the team's Google Drive, and the data
+has to be downloaded from Kaggle.
 
 ## Team
 
 Celia Liang, Eddie Wu, Shiqi Wang, Yonah You (New York University).
-
-Eddie Wu contributed across data preparation, modeling and evaluation, with a main focus on designing and implementing
-Section-Aware BERT. He also helped build the preprocessing and section-segmentation pipeline and analyze misclassified
-postings and section attention patterns.
 
 ## License
 
