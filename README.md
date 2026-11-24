@@ -115,10 +115,6 @@ paper/   the final paper (PDF)
 
 Celia Liang, Eddie Wu, Shiqi Wang, Yonah You (New York University).
 
-Eddie Wu contributed across data preparation, modeling and evaluation, with a main focus on designing and implementing
-Section-Aware BERT. He also helped build the preprocessing and section-segmentation pipeline and analyze misclassified
-postings and section attention patterns.
-
 ## License
 
 MIT (see [LICENSE](LICENSE)). The dataset keeps its original license on Kaggle.
