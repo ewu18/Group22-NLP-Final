@@ -1,36 +1,124 @@
-# Group22-NLP-Final
+# Experience-Level Classification of Job Postings with Section-Aware BERT
 
-# Job Experience Level Classification from Job Descriptions
+Final project for the NLP course at New York University (Fall 2025).
 
-Classify job postings into **Intern / Entry-level / Senior-level / Executive-level** using NLP models, comparing classic ML baselines (TF-IDF + Logistic Regression) with transformer-based models (section-aware BERT) and an LLM prompting “ceiling” baseline.
+Given a LinkedIn job posting, predict the experience level it requires: **Entry, Mid, Senior, or Executive**.
+Job titles alone are an unreliable signal ("coordinator", "analyst" and "specialist" appear at every level), so we
+propose **Section-Aware BERT**, which encodes the title, responsibilities, requirements and remaining text of a
+posting separately and fuses them with multi-head attention.
 
-## Project Goals
-- Build an end-to-end pipeline for **experience-level classification** from job descriptions
-- Compare multiple approaches under the same evaluation setting
-- Report **Accuracy + Macro-F1** (macro-F1 is key for class imbalance)
-- Perform error analysis to understand confusions (e.g., Senior vs Executive)
+**Paper:** [Evaluating Modeling Approaches for Experience-Level Classification in Job Description](paper/Experience_Level_Classification_Section_Aware_BERT.pdf)
+(Celia Liang, Eddie Wu, Shiqi Wang, Yonah You)
 
-## Dataset
-We use a public Kaggle dataset of job postings (job descriptions + experience level labels).
+## Results at a glance
 
-### Label Space
-- `Intern`
-- `Entry-level`
-- `Senior-level`
-- `Executive-level`
+| Model | Accuracy | Macro-F1 | Weighted F1 | Test samples |
+|---|---|---|---|---|
+| Rule-based (regex) | 0.5035 | 0.4284 | 0.4160 | 12,108 |
+| TF-IDF + Logistic Regression | 0.7341 | 0.6351 | 0.7202 | 12,108 |
+| Baseline BERT | 0.7835 | 0.7200 | 0.7807 | 12,108 |
+| **Section-Aware BERT** | **0.8256** | **0.7600** | **0.8200** | 12,108 |
+| GPT-4o-mini (few-shot) | 0.6432 | 0.6025 | 0.6440 | 1,000 |
+| GPT-4o-mini (fine-tuned) | 0.7720 | 0.6856 | 0.7635 | 1,000 |
 
-## Methods Implemented
-1. **Regex baseline**
-   - Rule-based matching on keywords such as “intern”, “junior”, “senior”, “director”, etc.
-   - If no match, fall back to a default class (e.g., majority class)
+Section-Aware BERT improves accuracy by 4.2 points over baseline BERT and outperforms a fine-tuned GPT-4o-mini.
+The GPT-4o-mini rows were evaluated on a stratified sample of 1,000 test postings because of API cost, and the
+fine-tuned model saw 5,000 training examples (about 9% of the data available to the BERT models).
 
-2. **TF-IDF + Logistic Regression**
-   - Bag-of-words baseline with TF-IDF features
-   - Logistic Regression classifier
+Per-class F1 on the test set:
 
-3. **Section-aware BERT**
-   - Split job descriptions into sections (e.g., Title / Responsibilities / Requirements / Others)
-   - Encode each section with BERT, then aggregate (attention / pooling) for final prediction
+| Model | Entry | Mid | Senior | Executive |
+|---|---|---|---|---|
+| TF-IDF + Logistic Regression | 0.78 | 0.36 | 0.77 | 0.63 |
+| Baseline BERT | 0.83 | 0.53 | 0.80 | 0.73 |
+| **Section-Aware BERT** | **0.88** | **0.54** | **0.85** | 0.79 |
+| GPT-4o-mini (fine-tuned) | 0.81 | 0.42 | 0.80 | 0.78 |
 
-4. **LLM prompting baseline**
-   - Few-shot prompting/Fine-tuned as an upper-bound reference
+## Data
+
+- Source: the public [LinkedIn Job Postings dataset on Kaggle](https://www.kaggle.com/datasets/arshkon/linkedin-job-postings)
+  (about 124,000 postings with recruiter-provided experience levels). The data is not redistributed in this repository.
+- Cleaning: kept `title`, `description`, `skills_desc` and `formatted_experience_level`; removed postings with missing
+  or very short (< 30 characters) descriptions and exact duplicate descriptions; normalized whitespace and special characters.
+  **80,717 postings** remain.
+- Label mapping (six original levels to four):
+
+  | Original label | Mapped to |
+  |---|---|
+  | Internship, Entry level | Entry |
+  | Associate | Mid |
+  | Mid-Senior level | Senior |
+  | Director, Executive | Executive |
+
+- Class sizes: Senior 36,110, Entry 31,453, Mid 8,719, Executive 4,435.
+- Split: stratified 70 / 15 / 15 into train (56,501), development (12,108) and test (12,108).
+- Section segmentation: each description is split into Responsibilities, Requirements and Other, with fallback
+  heuristics when headings are missing. Responsibilities were extracted for 97.9% of postings and Requirements for 91.1%.
+
+## Models
+
+| | Model | Input |
+|---|---|---|
+| V1 | Regex rules | Handcrafted title and description patterns, checked in the order Executive, Entry, Mid, Senior; default Senior |
+| V2 | TF-IDF + Logistic Regression | Title + description; 5,000 unigram and bigram features, L2 regularization, C = 1 tuned on the development set |
+| V3 | Baseline BERT | Title + description as one sequence, truncated to 512 tokens |
+| V4 | **Section-Aware BERT** | Four separately encoded sections |
+| V5 | GPT-4o-mini | Few-shot (3 examples per class) and fine-tuned through the OpenAI API |
+
+### Section-Aware BERT
+
+```mermaid
+flowchart TD
+    T[Title<br/>64 tokens] --> E1[BERT]
+    R[Responsibilities<br/>256 tokens] --> E2[BERT]
+    Q[Requirements<br/>256 tokens] --> E3[BERT]
+    O[Other<br/>256 tokens] --> E4[BERT]
+    E1 & E2 & E3 & E4 --> A["8-head self-attention<br/>+ residual + LayerNorm"]
+    A --> P[Mean pooling]
+    P --> C["Dropout 0.1 + linear classifier"]
+    C --> Y[Entry / Mid / Senior / Executive]
+```
+
+- One shared `bert-base-uncased` encoder (the four BERT boxes share weights) produces a 768-dimensional `[CLS]`
+  vector per section.
+- An 8-head self-attention layer over the four section vectors learns how much each section contributes; a residual
+  connection and layer normalization follow, then mean pooling, dropout (p = 0.1) and a linear classifier.
+- Training: AdamW, learning rate 2e-5, linear warmup over 10% of steps, 3 epochs, batch size 16, best checkpoint
+  chosen on the development set (the same setup as baseline BERT).
+- Each section gets its own token budget, so long descriptions no longer push the Requirements section past the
+  512-token limit.
+
+## Key findings
+
+- **Titles are ambiguous.** Only 24% of test postings contain an explicit experience keyword. TF-IDF misclassifies
+  38.6% of postings whose title contains "coordinator", 37.6% for "analyst" and 35.2% for "specialist".
+- **Truncation hides the strongest signals.** Descriptions average about 3,900 characters, while 512 BERT tokens cover
+  roughly 2,000. The Requirements section starts on average 44.5% of the way into a description and falls in the second
+  half for 29.9% of postings.
+- **Structure helps every class.** Recall improves over baseline BERT for Entry (+3.8 points), Mid (+3.4), Senior (+3.9)
+  and Executive (+8.1). Most of the 1,048 postings that Section-Aware BERT gets right and baseline BERT gets wrong are
+  Entry and Senior roles with ambiguous titles.
+- **The title still matters most.** Averaged over the test set, the fusion attention gives the Title 36.5% of its weight,
+  Other 23.2%, Responsibilities 21.0% and Requirements 19.3%.
+- **Mid-level remains hard for every model.** It has no distinctive vocabulary and overlaps with both Entry and Senior;
+  some apparent errors also point to inconsistent employer-provided labels.
+- **Architecture over scale.** On this structured text, a model that follows the document's structure beats a larger,
+  general-purpose LLM that was fine-tuned on less data.
+
+## Repository contents
+
+```
+paper/   the final paper (PDF)
+```
+
+## Team
+
+Celia Liang, Eddie Wu, Shiqi Wang, Yonah You (New York University).
+
+Eddie Wu contributed across data preparation, modeling and evaluation, with a main focus on designing and implementing
+Section-Aware BERT. He also helped build the preprocessing and section-segmentation pipeline and analyze misclassified
+postings and section attention patterns.
+
+## License
+
+MIT (see [LICENSE](LICENSE)). The dataset keeps its original license on Kaggle.
