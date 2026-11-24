@@ -108,24 +108,23 @@ flowchart TD
 ## Repository contents
 
 ```
-paper/       the final paper (PDF)
-notebooks/   the Google Colab notebook used for the experiments
+paper/                                 the final paper (PDF)
+notebooks/01_data_and_baselines.ipynb  data cleaning, label mapping, section segmentation, splits; regex and TF-IDF baselines
+notebooks/02_bert_models.ipynb         three-section model, baseline BERT, Section-Aware BERT; comparisons and attention analysis
+notebooks/03_llm_baselines.ipynb       few-shot prompting and GPT-4o-mini fine-tuning
+notebooks/04_error_analysis.ipynb      error analysis and example postings
 ```
 
-The paper reports the final results; read it first. The notebook
-(`notebooks/section_aware_bert_experiments.ipynb`) is the working notebook the team ran in Colab, kept with its saved
-outputs:
+The paper reports the final results; read it first. The notebooks are the team's working Colab notebook, split by stage
+and kept with their saved outputs. In `02_bert_models.ipynb` the final model appears as **Title-Aware BERT**: it adds
+the title as a fourth section to a first three-section model, and it is the **Section-Aware BERT** of the paper.
 
-- Data cleaning, label mapping and section segmentation; the regex and TF-IDF baselines; GPT-4o-mini few-shot and fine-tuning
-- A first three-section model, baseline BERT, and the four-section model, which appears in the notebook as
-  **Title-Aware BERT** and is the **Section-Aware BERT** of the paper
-- Error, attention and Mid-level analyses, and the figure code
-
-Some intermediate runs in the notebook give slightly different numbers from the paper (for example, 78.51% for
-baseline BERT against 78.35% in the paper); the paper's numbers are the final ones. Comments and printed messages in
-the code have been translated into English, but the saved outputs are left as they were produced, so some of them are
-in Chinese. A few cells (the OpenAI fine-tuning setup) are incomplete in the original and do not run as is; the
-OpenAI API key is a placeholder. Paths point to the team's Google Drive, and the data has to be downloaded from Kaggle.
+Some intermediate runs in the notebooks use different settings or give slightly different numbers from the paper (for
+example, 78.51% for baseline BERT against 78.35% in the paper, and a 400-posting LLM sample against 1,000); the paper's
+numbers are the final ones. Comments and printed messages in the code have been translated into English, but the saved
+outputs are left as they were produced, so some of them are in Chinese. The OpenAI fine-tuning cells are incomplete in
+the original and do not run as is; the API key is a placeholder. Paths point to the team's Google Drive, and the data
+has to be downloaded from Kaggle.
 
 ## Team
 
