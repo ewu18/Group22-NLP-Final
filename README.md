@@ -108,8 +108,24 @@ flowchart TD
 ## Repository contents
 
 ```
-paper/   the final paper (PDF)
+paper/       the final paper (PDF)
+notebooks/   the Google Colab notebook used for the experiments
 ```
+
+The paper reports the final results; read it first. The notebook
+(`notebooks/section_aware_bert_experiments.ipynb`) is the working notebook the team ran in Colab, kept with its saved
+outputs:
+
+- Data cleaning, label mapping and section segmentation; the regex and TF-IDF baselines; GPT-4o-mini few-shot and fine-tuning
+- A first three-section model, baseline BERT, and the four-section model, which appears in the notebook as
+  **Title-Aware BERT** and is the **Section-Aware BERT** of the paper
+- Error, attention and Mid-level analyses, and the figure code
+
+Some intermediate runs in the notebook give slightly different numbers from the paper (for example, 78.51% for
+baseline BERT against 78.35% in the paper); the paper's numbers are the final ones. Comments and printed messages in
+the code have been translated into English, but the saved outputs are left as they were produced, so some of them are
+in Chinese. A few cells (the OpenAI fine-tuning setup) are incomplete in the original and do not run as is; the
+OpenAI API key is a placeholder. Paths point to the team's Google Drive, and the data has to be downloaded from Kaggle.
 
 ## Team
 
