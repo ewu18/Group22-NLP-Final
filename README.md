@@ -110,14 +110,18 @@ flowchart TD
 ```
 paper/                                 the final paper (PDF)
 notebooks/01_data_and_baselines.ipynb  data cleaning, label mapping, section segmentation, splits; regex and TF-IDF baselines
-notebooks/02_bert_models.ipynb         three-section model, baseline BERT, Section-Aware BERT; comparisons and attention analysis
-notebooks/03_llm_baselines.ipynb       few-shot prompting and GPT-4o-mini fine-tuning
-notebooks/04_error_analysis.ipynb      error analysis and example postings
+notebooks/02_three_section_bert.ipynb  first section-aware model, without the title as a section
+notebooks/03_baseline_bert.ipynb       baseline BERT and a cross-model error analysis
+notebooks/04_section_aware_bert.ipynb  the final Section-Aware BERT, its error analysis and comparison with baseline BERT
+notebooks/05_bert_analysis.ipynb       why Section-Aware BERT works, and why Mid-level is hard
+notebooks/06_paper_figures.ipynb       plotting code for figures, some of which appear in the paper
+notebooks/07_llm_baselines.ipynb       few-shot prompting and GPT-4o-mini fine-tuning
+notebooks/08_error_analysis.ipynb      TF-IDF error analysis and example postings
 ```
 
 The paper reports the final results; read it first. The notebooks are the team's working Colab notebook, split by stage
-and kept with their saved outputs. In `02_bert_models.ipynb` the final model appears as **Title-Aware BERT**: it adds
-the title as a fourth section to a first three-section model, and it is the **Section-Aware BERT** of the paper.
+and kept with their saved outputs. In `04_section_aware_bert.ipynb` the final model appears as **Title-Aware BERT**: it adds
+the title as a fourth section to the three-section model of `02`, and it is the **Section-Aware BERT** of the paper.
 
 Some intermediate runs in the notebooks use different settings or give slightly different numbers from the paper (for
 example, 78.51% for baseline BERT against 78.35% in the paper, and a 400-posting LLM sample against 1,000); the paper's
